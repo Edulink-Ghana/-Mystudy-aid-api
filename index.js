@@ -1,5 +1,9 @@
 import express from "express";
+import session from "express-session";
+import MongoStore from "connect-mongo";
 import { dbConnection } from "./Config/db.js";
+import {teacherRouter} from "./routes/teacher.js";
+import userRouter from "./routes/user.js";
 import { restartServer } from "./restart_server.js";
 import 'dotenv/config'
 
@@ -11,6 +15,22 @@ import 'dotenv/config'
 //create server app
 const app = express();
 
+//middlewares
+app.use(express.json());
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    //cookie: { secure: true }
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URL
+    })
+}))
+
+//Use Routes
+app.use('/api/v1', userRouter)
+app.use('/api/v1', teacherRouter)
 
 
 

@@ -1,38 +1,38 @@
-import { User } from "../models/userModel.js";
-import { registerValidator, loginValidator, userValidator } from "../validators/user.js";
+import { Teacher } from "../models/teacherModel.js";
+import { loginValidator, registerValidator, teacherValidator } from "../validators/teacher.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-//user registeration
-export const register = async (req, res, next) => {
+// teacher registration
+export const registerTeacher= async (req, res, next) => {
     try {
-        // Validate request
-        const { value, error } = registerValidator.validate(req.body);
-        if (error) {
-            return res.status(422).json(error.details[0].message);
-        } 
-        const email = value.email
-        // check if the user exixt 
-        const UserExist = await User.findOne({ email })
-        if (UserExist) {
-           return res.status(401).send({ message: 'User has already signed Up'})
-        } 
-        // Encrypt user password
-        const hashedPassword = bcrypt.hashSync(value.password, 10);
-        // Create user
-        await User.create({
-            ...value,
-            password: hashedPassword
-        });
-        // Return response
-        res.status(201).json({ message: 'User registered'});
-    } catch (error) {
-         next(error);
+        //validate request
+        // const { value, error } = registerValidator.validate(req.body);
+        // if (error){
+        //     return res.status(422).json(error.details[0].message);
+        // }
+            const email = req.body.email
+            // check if the user exixt 
+            const UserExist = await Teacher.findOne({ email })
+            if (UserExist) {
+               return res.status(401).send({ message: 'User has already signed Up'})
+            } 
+            // Encrypt user password
+            const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+            // Create user
+            await Teacher.create({
+                ...req.body,
+                password: hashedPassword
+            });
+            // Return response
+            res.status(201).json({ message: 'Teacher registered'});
+        } catch (error) {
+             next(error);
+        }
     }
-}
+    
 
-
-//Session Login 
+    //Session Login 
 export const login = async (req, res, next) => {
     try {
         // Validate request
@@ -41,9 +41,8 @@ export const login = async (req, res, next) => {
         
             return res.status(422).json(error);
         }
-        
         // Find a user with their unique identifier
-        const user = await User.findOne({
+        const user = await Teacher.findOne({
             $or: [
                 { username: value.username },
                 { email: value.email },
@@ -73,6 +72,7 @@ export const login = async (req, res, next) => {
     }
 }
 
+
 //Token login 
 export const token = async (req, res, next) => {
     try {
@@ -82,7 +82,7 @@ export const token = async (req, res, next) => {
             return res.status(422).json(error.details[0].message);
         }
         // Find a user with their unique identifier
-        const user = await User.findOne({
+        const user = await Teacher.findOne({
             $or: [
                 { username: value.username },
                 { email: value.email },
@@ -118,21 +118,22 @@ export const token = async (req, res, next) => {
     }
 }
 
-//User Profile
+//Teacher Profile
 export const profile = async (req, res, next) => {
     try {
         // Get user id from session or request
         const id = req.session?.user?.id || req?.user?.id;
         // Find user by id
-        const user = await User.findById(id)
+        const teacher = await Teacher.findById(id)
             .select({ password: false });
         // Return response
-        res.status(200).json(user);
+        res.status(200).json(teacher);
     } catch (error) {
         next(error);
     }
 }
-// user logout
+
+// Teacher logout
 export const logout = async (req, res, next) => {
     try {
         // Destroy user session
@@ -143,31 +144,3 @@ export const logout = async (req, res, next) => {
         next(error);
     }
 }
-
-//update user 
-
-export const updateUser = async (req, res, next) => {
-    try {
-      const { error, value } = userValidator.validate(req.body);
-  
-      if (error) {
-        return res.status(400).send(error.details[0].message);
-      }
-  
-      const userSessionId  = req.session?.user?.id || req?.user?.id;
-      const user = await User.findById(userSessionId);
-      if (!user) {
-        return res.status(404).send({ error:"User not authenticated"});
-      }
-  
-      const User = await User.findByIdAndUpdate(req.params.id, value, { new: true });
-        if (!User) {
-            return res.status(404).send({message:"User not found"});
-        }
-  
-      res.status(201).json({message: 'User updated', user });
-    } catch (error) {
-      next(error)
-    }
-  };
-
