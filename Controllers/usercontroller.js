@@ -1,7 +1,9 @@
 import { User } from "../models/userModel.js";
+import { Teacher } from "../models/teacherModel.js";
 import { registerValidator, loginValidator, userValidator } from "../validators/user.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { mailTransport } from "../Config/mail.js";
 
 //user registeration
 export const register = async (req, res, next) => {
@@ -24,6 +26,13 @@ export const register = async (req, res, next) => {
             ...value,
             password: hashedPassword
         });
+        // Send email to user
+        await mailTransport.sendMail({
+            from: "emmanuel@laremdetech.com",
+            to: value.email,
+            subject: "User Account Created!",
+            text: `Dear user,\n\nA user account has been created for you with the following credentials.\n\nUsername: ${value.userName}\nEmail: ${value.email}\nPassword: ${value.password}\n\nThank you!`,
+        });
         // Return response
         res.status(201).json({ message: 'User registered'});
     } catch (error) {
@@ -43,15 +52,12 @@ export const login = async (req, res, next) => {
         }
         
         // Find a user with their unique identifier
-        const user = await User.findOne({
-            $or: [
-                { username: value.username },
-                { email: value.email },
-            ]
-        });
+        const user = await User.findOne({  $or: [ { username: value.username },{ email: value.email },]})
         if (!user) {
             return res.status(401).json({ message:'User not found'});
+            
         }
+       
         // Verify their password
         const correctPassword = bcrypt.compareSync(value.password, user.password);
         if (!correctPassword) {

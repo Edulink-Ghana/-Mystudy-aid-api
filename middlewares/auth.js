@@ -1,9 +1,18 @@
 import jwt from "jsonwebtoken";
+import { User } from "../models/userModel.js";
+import { Teacher } from "../models/teacherModel.js";
 
 
-export const isAuthenticated = (req, res, next) => {
+
+export const isAuthenticated = async (req, res, next) => {
     // Check if session has user
     if (req.session.user) {
+        // Check if user exist in database
+        const user = await User.findById(req.session.user.id);
+        if (!user) {
+            return res.status(401).json('User Does Not Exist!');
+        }
+        // Call next function
         next();
     } else if (req.headers.authorization) {
         try {
@@ -11,12 +20,48 @@ export const isAuthenticated = (req, res, next) => {
             const token = req.headers.authorization.split(' ')[1];
             // Verify the token to get user and append to request
             req.user = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+            // Check if user exist in database
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(401).json('User Does Not Exist!');
+            }
             // Call next function
             next();
         } catch (error) {
             res.status(401).json({ error: 'Token expired' });
         }
-    } else { 
-        res.status(401).json({ error:'User not authenticated'});
+    } else {
+        res.status(401).json({ error: 'User not authenticated' });
+    }
+}
+
+export const isAuthenticatedteacher = async (req, res, next) => {
+    // Check if session has user
+    if (req.session.user) {
+        // Check if user exist in database
+        const user = await Teacher.findById(req.session.user.id);
+        if (!user) {
+            return res.status(401).json('User Does Not Exist!');
+        }
+        // Call next function
+        next();
+    } else if (req.headers.authorization) {
+        try {
+            // Extract token from headers
+            const token = req.headers.authorization.split(' ')[1];
+            // Verify the token to get user and append to request
+            req.user = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+            // Check if user exist in database
+            const user = await Teacher.findById(req.user.id);
+            if (!user) {
+                return res.status(401).json('User Does Not Exist!');
+            }
+            // Call next function
+            next();
+        } catch (error) {
+            res.status(401).json({ error: 'Token expired' });
+        }
+    } else {
+        res.status(401).json({ error: 'User not authenticated' });
     }
 }

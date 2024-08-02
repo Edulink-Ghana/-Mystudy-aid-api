@@ -5,6 +5,8 @@ import { dbConnection } from "./Config/db.js";
 import {teacherRouter} from "./routes/teacher.js";
 import userRouter from "./routes/user.js";
 import { restartServer } from "./restart_server.js";
+import expressOasGenerator from "@mickeymond/express-oas-generator";
+import mongoose from "mongoose";
 import 'dotenv/config'
 
 
@@ -14,6 +16,11 @@ import 'dotenv/config'
 
 //create server app
 const app = express();
+expressOasGenerator.handleResponses(app, {
+    alwaysServeDocs: true,
+    tags: [],
+    mongooseModels: mongoose.modelNames(),
+});
 
 //middlewares
 app.use(express.json());
@@ -33,6 +40,8 @@ app.use('/api/v1', userRouter)
 app.use('/api/v1', teacherRouter)
 
 
+expressOasGenerator.handleRequests();
+app.use((req, res) => res.redirect('/api-docs/'));
 
 
 

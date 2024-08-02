@@ -12,8 +12,11 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['student', 'parent'], default: 'student' },
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }], // Reference to bookings
-    reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }] // Reference to reviews
-}, {
+    reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }] ,// Reference to reviews
+    verified: { type: Boolean, required: true, default: false},
+    role: { type: String, default: 'parent' }
+},
+    {
     timestamps: true,
 });
 

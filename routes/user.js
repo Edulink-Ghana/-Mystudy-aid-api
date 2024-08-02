@@ -7,9 +7,9 @@ const userRouter = Router();
 
 userRouter.post('/users/register',register)
 
-userRouter.post('/users/auth/session/login',login)
+userRouter.post('/users/session/login',login)
 
-userRouter.post('/users/auth/token/login',token)
+userRouter.post('/users/token/login',token)
 
 userRouter.get('/users/profile',isAuthenticated,profile)
 

@@ -10,18 +10,22 @@ const teacherSchema = new Schema({
   password: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   subjects: { type: [String], required: true },
-  area: { type: String, required: true },
+  area: { type: [String], required: true },
   curriculum: { type: String, enum: ['GES Curriculum', 'British Curriculum'], default: 'GES Curriculum' },
-  grade: { type: String, required: true },
+  grade: { type: [String], required: true },
+  experience: { type: String, required: true },
   availability: [{ 
-    day: { type: String, required: true }, // e.g., 'Monday', 'Tuesday'
-    startTime: { type: String, required: true }, // e.g., '09:00'
-    endTime: { type: String, required: true }, // e.g., '17:00'
+    day: { type: String, required: true }, 
+    startTime: { type: String, required: true }, 
+    endTime: { type: String, required: true }, 
   }],
+  teachingMode: { type: String, enum: ['Online', 'In-person', 'Both'], required: true },
   costPerHour: { type: Number, required: true },
-  qualifications: { type: [String], required: true },
+  qualifications:{ type: [String], required: true },
   bookings: [{ type: Types.ObjectId, ref: 'Booking' }],
   specialNeedsExperience: { type: Boolean, default: false }, 
+  verified: { type: Boolean, required: true, default: false },
+  role: { type: String, default: 'teacher' },
   reviews: [{
     user: { type: Types.ObjectId, ref: 'User' },
     rating: { type: Number, required: true },
