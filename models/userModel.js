@@ -14,7 +14,7 @@ const userSchema = new Schema({
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }], // Reference to bookings
     reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }] ,// Reference to reviews
     verified: { type: Boolean, required: true, default: false},
-    role: { type: String, default: 'parent' }
+    role: { type: String, default: 'user' }
 },
     {
     timestamps: true,
