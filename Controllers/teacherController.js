@@ -133,6 +133,22 @@ export const profile = async (req, res, next) => {
     }
 }
 
+// Get  teachers 
+export const getteachers = async (req, res, next) => {
+    try {
+        //Get query params
+        const { filter = "{}"} = req.query
+    
+        // Get all  teacher
+        const allEvent = await EventModel.find(JSON.parse(filter))
+        //return response
+        res.status(200).json(allEvent);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 // Teacher logout
 export const logout = async (req, res, next) => {
     try {

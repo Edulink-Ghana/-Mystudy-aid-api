@@ -5,10 +5,10 @@ import { Router } from "express";
 
 export const teacherRouter = Router();
 
-teacherRouter.post('/teachers/registers',registerTeacher)
-teacherRouter.post('/teachers/session/login',login)
-teacherRouter.post('/teachers/token/login',token)
-teacherRouter.get('/teachers/profile',isAuthenticatedteacher,profile)
-teacherRouter.post('/users/logout',isAuthenticated,logout)
+teacherRouter.post('/teacher/registers',registerTeacher)
+teacherRouter.post('/teacher/session/login',login)
+teacherRouter.post('/teacher/token/login',token)
+teacherRouter.get('/teacher/profile',isAuthenticatedteacher,profile)
+teacherRouter.post('/teacher/logout',isAuthenticatedteacher,logout)
 
  //export default teacherRouter

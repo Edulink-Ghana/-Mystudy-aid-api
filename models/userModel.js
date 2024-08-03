@@ -10,11 +10,10 @@ const userSchema = new Schema({
     userName: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['student', 'parent'], default: 'student' },
+    role: { type: String, default: 'user',enum: ['superadmin', 'admin', 'teacher', 'user']  },
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }], // Reference to bookings
     reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }] ,// Reference to reviews
     verified: { type: Boolean, required: true, default: false},
-    role: { type: String, default: 'user' }
 },
     {
     timestamps: true,

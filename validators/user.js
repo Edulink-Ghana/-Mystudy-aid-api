@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const registerValidator = Joi.object({
+export const registerUserValidator = Joi.object({
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     phoneNumber: Joi.string().required(),
@@ -9,6 +9,18 @@ export const registerValidator = Joi.object({
     password: Joi.string().min(6).required(),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
     role: Joi.string(),
+
+})
+
+export const createUserValidator = Joi.object({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    phoneNumber: Joi.string().required(),
+    userName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+    role: Joi.string().required().valid('superadmin', 'admin'),
 
 })
 //.with( 'password', 'confirmPassword')
@@ -23,4 +35,12 @@ export const userValidator = Joi.object({
     lastName: Joi.string().required(),
     userName: Joi.string().required(),
     phoneNumber: Joi.string().required(),
+})
+
+export const updateUserValidator = Joi.object({
+    firstName: Joi.string(),
+    lastName: Joi.string(),
+    userName: Joi.string(),
+    phoneNumber: Joi.string(),
+    role: Joi.string().valid('superadmin', 'admin'),
 })
