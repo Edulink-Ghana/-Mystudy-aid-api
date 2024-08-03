@@ -13,7 +13,7 @@ const userSchema = new Schema({
     role: { type: String, default: 'user',enum: ['superadmin', 'admin', 'teacher', 'user']  },
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }], // Reference to bookings
     reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }] ,// Reference to reviews
-    verified: { type: Boolean, required: true, default: false},
+    verified: { type: Boolean, required: true, default: false}
 },
     {
     timestamps: true,

@@ -22,6 +22,7 @@ export const createUserValidator = Joi.object({
     confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
     role: Joi.string().required().valid('superadmin', 'admin'),
 
+
 })
 //.with( 'password', 'confirmPassword')
 
