@@ -25,7 +25,7 @@ const teacherSchema = new Schema({
   bookings: [{ type: Types.ObjectId, ref: 'Booking' }],
   specialNeedsExperience: { type: Boolean, default: false }, 
   verified: { type: Boolean, required: true, default: false },
-  role: { type: String, default: 'teacher' },
+  role: { type: String, default: 'user',enum: ['superadmin', 'admin', 'teacher', 'user']  },
   reviews: [{
     user: { type: Types.ObjectId, ref: 'User' },
     rating: { type: Number, required: true },

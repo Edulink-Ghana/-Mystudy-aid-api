@@ -1,5 +1,7 @@
 import express from "express";
 import session from "express-session";
+import cors from "cors";    
+import errorHandler from "errorhandler";
 import MongoStore from "connect-mongo";
 import { dbConnection } from "./Config/db.js";
 import {teacherRouter} from "./routes/teacher.js";
@@ -24,7 +26,10 @@ expressOasGenerator.handleResponses(app, {
 
 //middlewares
 app.use(express.json());
-
+app.use(cors({
+    credentials: true,
+    origin: process.env.ALLOWED_DOMAINS?.split(',') || []
+}));
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -39,9 +44,11 @@ app.use(session({
 app.use('/api/v1', userRouter)
 app.use('/api/v1', teacherRouter)
 
-
+//swagger Api Doc generator
 expressOasGenerator.handleRequests();
 app.use((req, res) => res.redirect('/api-docs/'));
+//error handler in use
+app.use(errorHandler({ log: false }));
 
 
 
