@@ -5,7 +5,7 @@ import { Router } from "express";
 
 export const teacherRouter = Router();
 
-teacherRouter.post('/teacher/registers',registerTeacher)
+teacherRouter.post('/teacher/register',registerTeacher)
 teacherRouter.post('/teacher/session/login',login)
 teacherRouter.post('/teacher/token/login',token)
 teacherRouter.get('/teacher/profile',isAuthenticatedteacher,profile)
