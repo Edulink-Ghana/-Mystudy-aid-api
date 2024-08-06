@@ -1,5 +1,5 @@
 
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { toJSON } from "@reis/mongoose-to-json";
 
 const bookingSchema = new Schema({
@@ -12,7 +12,7 @@ const bookingSchema = new Schema({
     },
     grade: { type: String, required: true },
     date: { type: Date, required: true },
-    location: { type: String, required: true },
+    area: { type: String, required: true },
     subject: { type: String, required: true },
 }, { timestamps: true });
 

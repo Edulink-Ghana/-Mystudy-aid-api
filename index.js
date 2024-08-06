@@ -6,6 +6,7 @@ import MongoStore from "connect-mongo";
 import { dbConnection } from "./Config/db.js";
 import {teacherRouter} from "./routes/teacher.js";
 import userRouter from "./routes/user.js";
+import { bookingRouter } from "./routes/booking.js";
 import { restartServer } from "./restart_server.js";
 import expressOasGenerator from "@mickeymond/express-oas-generator";
 import mongoose from "mongoose";
@@ -43,6 +44,7 @@ app.use(session({
 //Use Routes
 app.use('/api/v1', userRouter)
 app.use('/api/v1', teacherRouter)
+app.use('/api/v1', bookingRouter)
 
 //swagger Api Doc generator
 expressOasGenerator.handleRequests();
