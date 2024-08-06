@@ -49,17 +49,20 @@ export const login = async (req, res, next) => {
         if (error) {
             return res.status(422).json(error);
         }
-       
         // Find a user with their unique identifier
-        const user = await User.findOne({ $or: [{ username: value.username }, { email: value.email },] })
+        const user = await User.findOne({
+            $or: [
+                { userName: value.userName },
+                { email: value.email },
+            ]
+        });
         if (!user) {
             return res.status(401).json({ message: 'User not found' });
         }
-        console.log(user)
         // Verify their password
         const correctPassword = bcrypt.compareSync(value.password, user.password);
         if (!correctPassword) {
-            return res.status(401).json(error.details[0].message);
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
         // Create a session
         req.session.user = { id: user.id }
@@ -70,12 +73,14 @@ export const login = async (req, res, next) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 userName: user.userName
+
             }
         });
     } catch (error) {
         next(error);
     }
 }
+
 
 //Token login 
 export const token = async (req, res, next) => {
@@ -88,7 +93,7 @@ export const token = async (req, res, next) => {
         // Find a user with their unique identifier
         const user = await User.findOne({
             $or: [
-                { username: value.username },
+                { userName: value.userName },
                 { email: value.email },
             ]
         });
