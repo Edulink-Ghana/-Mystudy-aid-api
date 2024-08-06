@@ -31,12 +31,6 @@ export const loginValidator = Joi.object({
     email: Joi.string().email(),
     password: Joi.string().required(),
 });
-export const userValidator = Joi.object({
-    firstName: Joi.string().required(),
-    lastName: Joi.string().required(),
-    userName: Joi.string().required(),
-    phoneNumber: Joi.string().required(),
-})
 
 export const updateUserValidator = Joi.object({
     firstName: Joi.string(),

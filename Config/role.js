@@ -21,6 +21,11 @@ export const roles = [
             'update_user',
             'read_teachers',
             'update_teacher',
+            'delete_teacher',
+            'delete_user',
+            'read_bookings',
+
+
         ]
     },
     {
@@ -29,6 +34,9 @@ export const roles = [
             'update_teacher',
             'read_teacher',
             'create_teacher',
+            'update_booking',
+            'read_booking',
+           
         ]
     },
     {
@@ -36,6 +44,9 @@ export const roles = [
         permissions: [
             'update_user',
             'read_user',
+            'update_booking',
+            'read_booking',
+            'create_booking'
         ]
     }
 ];

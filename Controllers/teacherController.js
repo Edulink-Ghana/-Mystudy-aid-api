@@ -125,7 +125,12 @@ export const profile = async (req, res, next) => {
         const id = req.session?.user?.id || req?.user?.id;
         // Find user by id
         const teacher = await Teacher.findById(id)
-            .select({ password: false });
+            .select({ password: false })
+            .populate({
+                path: 'bookings',
+                select:"timeslot date grade area subject user",
+                options
+             })
         // Return response
         res.status(200).json(teacher);
     } catch (error) {

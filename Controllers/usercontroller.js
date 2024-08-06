@@ -1,6 +1,7 @@
 import { ResetToken, User } from "../models/userModel.js";
 import { Teacher } from "../models/teacherModel.js";
-import { registerUserValidator, loginValidator, userValidator, createUserValidator, updateUserValidator, forgotPasswordValidator, resetPasswordValidator } from "../validators/user.js";
+import { Booking } from "../models/bookingModel.js";
+import { registerUserValidator, loginValidator, createUserValidator, updateUserValidator, forgotPasswordValidator, resetPasswordValidator } from "../validators/user.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { mailTransport } from "../Config/mail.js";
@@ -132,14 +133,49 @@ export const profile = async (req, res, next) => {
         // Get user id from session or request
         const id = req.session?.user?.id || req?.user?.id;
         // Find user by id
+        const options = { sort: { startDate: -1 } }
         const user = await User.findById(id)
-            .select({ password: false });
+            .select({ password: false })
+            .populate({
+                path: 'bookings',
+                select:"timeslot date grade area subject teacher",
+                options
+             })
         // Return response
         res.status(200).json(user);
     } catch (error) {
         next(error);
     }
 }
+
+
+
+// Get user's bookings
+export const getUserBookings = async (req, res, next) => {
+    try {
+      // Get user ID from session or request
+      const userId = req.session?.user?.id || req?.user?.id;
+  
+      // Find the user
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).send({ error: 'User not found' });
+      }
+  
+      // Find bookings associated with the user
+      const bookings = await Booking.find({ user: userId })
+        .populate({
+          path: 'teacher',
+          select: 'firstName lastName userName email', // Select teacher fields
+        });
+  
+      // Return response
+      res.status(200).json(bookings);
+    } catch (error) {
+      next(error);
+    }
+  };
+  
 // user logout
 export const logout = async (req, res, next) => {
     try {

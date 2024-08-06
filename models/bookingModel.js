@@ -14,6 +14,13 @@ const bookingSchema = new Schema({
     date: { type: Date, required: true },
     area: { type: String, required: true },
     subject: { type: String, required: true },
+    status: {
+        type: String,
+        enum: ['pending', 'accepted', 'cancelled', 'closed'],
+        default: 'pending'
+    },
+    cancellationReason: { type: String }, // Optional reason for cancellation
+    closureReason: { type: String } // Optional reason for closure
 }, { timestamps: true });
 
 
