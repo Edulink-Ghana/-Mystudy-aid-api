@@ -2,12 +2,18 @@ import Joi from "joi"
 
 export const teacherValidator = Joi.object({
     
-    subjects: Joi.array().items(Joi.string()).required(),
-    area: Joi.string().required(),
-    availability: Joi.array().items(Joi.string()).required(),
-    costPerHour: Joi.number().required(),
-    qualifications: Joi.array().items(Joi.string()).required(),
-    grade: Joi.array().items(Joi.string())
+    subjects: Joi.array().items(Joi.string()),
+    area: Joi.string(),
+    availability: Joi.array().items(Joi.string()),
+    costPerHour: Joi.number(),
+    qualifications: Joi.array().items(Joi.string()),
+    grade: Joi.array().items(Joi.string()),
+    experience: Joi.string(),
+    teachingMode: Joi.string(),
+    curriculum: Joi.string(),
+    specialNeedsExperience: Joi.boolean(),
+
+
 })
 
 export const registerValidator = Joi.object({
