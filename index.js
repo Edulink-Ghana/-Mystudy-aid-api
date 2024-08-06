@@ -20,7 +20,7 @@ import 'dotenv/config'
 const app = express();
 expressOasGenerator.handleResponses(app, {
     alwaysServeDocs: true,
-    tags: [],
+    tags: ["users", "teachers", "bookings"],
     mongooseModels: mongoose.modelNames(),
 });
 
