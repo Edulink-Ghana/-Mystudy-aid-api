@@ -44,7 +44,7 @@ export const login = async (req, res, next) => {
         // Find a user with their unique identifier
         const user = await Teacher.findOne({
             $or: [
-                { username: value.username },
+                { userName: value.userName },
                 { email: value.email },
             ]
         });
@@ -84,7 +84,7 @@ export const token = async (req, res, next) => {
         // Find a user with their unique identifier
         const user = await Teacher.findOne({
             $or: [
-                { username: value.username },
+                { userName: value.userName },
                 { email: value.email },
             ]
         });
