@@ -1,5 +1,7 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 import { toJSON } from "@reis/mongoose-to-json";
+import mongooseErrors from "mongoose-errors";
+
 
 
 // User Schema
@@ -18,10 +20,32 @@ const userSchema = new Schema({
     {
     timestamps: true,
 });
+//reset token model 
+const resetTokenSchema = new Schema({
+    userId:{type:Types.ObjectId,required:true, ref:'User'},
+    expired:{type:Boolean, default:false},
+    expiredAt:{
+        type:Date,
+        default:() => new Date().setHours(new Date().getHours() + 2)
+    }
+
+},{
+    timestamps:true
+})
+
+
 
 // Convert to JSON
-userSchema.plugin(toJSON);
+userSchema
+.plugin(toJSON)
+.plugin(mongooseErrors);
 
-// Export User Model
+resetTokenSchema
+.plugin(toJSON)
+.plugin(mongooseErrors);
+
+
+// Export  Models
 export const User = model("User", userSchema);
+export const ResetToken = model("ResetToken", resetTokenSchema);
 

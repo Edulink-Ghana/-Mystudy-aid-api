@@ -8,7 +8,7 @@ export const registerUserValidator = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
-    role: Joi.string(),
+    
 
 })
 
@@ -44,4 +44,14 @@ export const updateUserValidator = Joi.object({
     userName: Joi.string(),
     phoneNumber: Joi.string(),
     role: Joi.string().valid('superadmin', 'admin'),
+})
+
+export const forgotPasswordValidator = Joi.object({
+    email:Joi.string().email().required(),
+});
+
+export const resetPasswordValidator =Joi.object({
+    resetToken:Joi.string().required(),
+    password:Joi.string().min(6).required(),
+    confirmPassword:Joi.string().valid(Joi.ref('password')).required(),
 })

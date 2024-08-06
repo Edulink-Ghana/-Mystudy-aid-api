@@ -1,6 +1,6 @@
-import { User } from "../models/userModel.js";
+import { ResetToken, User } from "../models/userModel.js";
 import { Teacher } from "../models/teacherModel.js";
-import { registerUserValidator, loginValidator, userValidator, createUserValidator, updateUserValidator } from "../validators/user.js";
+import { registerUserValidator, loginValidator, userValidator, createUserValidator, updateUserValidator, forgotPasswordValidator, resetPasswordValidator } from "../validators/user.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { mailTransport } from "../Config/mail.js";
@@ -150,6 +150,99 @@ export const logout = async (req, res, next) => {
         next(error);
     }
 }
+
+
+//forgot Password
+export const forgotPassword = async (req, res, next) => {
+    try {
+//validate request
+const {value, error} = forgotPasswordValidator.validate(req.body);
+if(error){
+    return res.status(422).json(error.details[0].message);
+}
+//Find a user with provided email
+const user = await User.findOne({email:value.email});
+if(!user){
+    return res.status(404).json({message:'User not found'});
+}
+//Generate Reset Token 
+const resetToken = await ResetToken.create({
+    userId:user.id,
+    });
+    // Send reset email
+    await mailTransport.sendMail({
+        to:value.email,
+        from:"emmanuel@laremdetech.com",
+        subject:"Reset Password",
+        html:`
+        <h3>Hello ${user.firstName}</h3>
+        <h4> Please follow the link below to reset your Password</h4>
+        <a href="${process.env.FRONTEND_URL}/reset-password/${resetToken.id}" > Click Here</a> `
+    });
+    //Return Response 
+    res.status(200).json('Password reset email sent')
+
+
+
+    } catch (error) {
+        next(error);
+    }
+}
+//Verify Reset Password Token
+export const verifyResetToken = async (req, res, next) => {
+    try {
+        //Find Reset Token by id 
+        const resetToken = await ResetToken.findById(req.params.id);
+        if(!resetToken){
+            return res.status(404).json({message:'Reset Token Not Found'});
+        }
+        console.log(resetToken)
+        //check if token is valid
+        if (resetToken.expired || Date.now() > new Date(resetToken.expiredAt).getTime()) {
+            return res.status(409).json({ message: 'Invalid Reset Token' });
+        }
+        //Return Response
+        res.status(200).json({message:'Valid Reset Token'});
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+// Reset Password
+
+export const resetPassword = async (req, res, next) => {
+try {
+    //validate request
+    const {value,error} = resetPasswordValidator.validate(req.body);
+    if(error){
+        return res.status(422).json(error.details[0].message);
+    }
+    //Find reset Token By Id
+    const resetToken = await ResetToken.findById(value.resetToken);
+    if(!resetToken0){
+        return res.status(404).json({message:'Reset Token not found'});
+    }
+    //Check if token is valid 
+    if (resetToken.expired || Date.now() > new Date(resetToken.expiredAt).getTime()) {
+        return res.status(409).json({ message: 'Invalid Reset Token' });
+        }
+    //Encrypt user password
+    const hashedPassword = bcrypt.hashSync(value.password, 10);
+    // Update user password 
+    await User.findByIdAndUpdate(resetToken.userId,{
+        password:hashedPassword
+    });
+//Expire reset password
+await ResetToken.findByIdAndUpdate(value.resetToken,{
+    expired:true
+})
+} catch (error) {
+    next
+}
+}
+
+
 
 //update user 
 
