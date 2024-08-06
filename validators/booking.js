@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const bookingValidator = Joi.object({
 
-    user: Joi.string().required(),
+    user: Joi.string(),
     teacher: Joi.string().required(),
     timeslot: Joi.object({
         day: Joi.string().required(),
@@ -15,3 +15,8 @@ export const bookingValidator = Joi.object({
     subject: Joi.string().required(),
 });
 
+export const updateBookingValidator = Joi.object({
+    status: Joi.string().valid('accepted', 'cancelled', 'closed'),
+    cancellationReason: Joi.string(),
+    closureReason: Joi.string(),
+});
