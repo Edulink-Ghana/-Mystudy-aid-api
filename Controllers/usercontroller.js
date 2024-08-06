@@ -47,21 +47,19 @@ export const login = async (req, res, next) => {
         // Validate request
         const { value, error } = loginValidator.validate(req.body);
         if (error) {
-
             return res.status(422).json(error);
         }
-
+       
         // Find a user with their unique identifier
         const user = await User.findOne({ $or: [{ username: value.username }, { email: value.email },] })
         if (!user) {
             return res.status(401).json({ message: 'User not found' });
-
         }
-
+        console.log(user)
         // Verify their password
         const correctPassword = bcrypt.compareSync(value.password, user.password);
         if (!correctPassword) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json(error.details[0].message);
         }
         // Create a session
         req.session.user = { id: user.id }
@@ -72,7 +70,6 @@ export const login = async (req, res, next) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 userName: user.userName
-
             }
         });
     } catch (error) {
@@ -117,7 +114,6 @@ export const token = async (req, res, next) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 userName: user.userName
-
             }
         });
     } catch (error) {
@@ -155,35 +151,32 @@ export const logout = async (req, res, next) => {
 //forgot Password
 export const forgotPassword = async (req, res, next) => {
     try {
-//validate request
-const {value, error} = forgotPasswordValidator.validate(req.body);
-if(error){
-    return res.status(422).json(error.details[0].message);
-}
-//Find a user with provided email
-const user = await User.findOne({email:value.email});
-if(!user){
-    return res.status(404).json({message:'User not found'});
-}
-//Generate Reset Token 
-const resetToken = await ResetToken.create({
-    userId:user.id,
-    });
-    // Send reset email
-    await mailTransport.sendMail({
-        to:value.email,
-        from:"emmanuel@laremdetech.com",
-        subject:"Reset Password",
-        html:`
+        //validate request
+        const { value, error } = forgotPasswordValidator.validate(req.body);
+        if (error) {
+            return res.status(422).json(error.details[0].message);
+        }
+        //Find a user with provided email
+        const user = await User.findOne({ email: value.email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        //Generate Reset Token 
+        const resetToken = await ResetToken.create({
+            userId: user.id,
+        });
+        // Send reset email
+        await mailTransport.sendMail({
+            to: value.email,
+            from: "emmanuel@laremdetech.com",
+            subject: "Reset Password",
+            html: `
         <h3>Hello ${user.firstName}</h3>
         <h4> Please follow the link below to reset your Password</h4>
         <a href="${process.env.FRONTEND_URL}/reset-password/${resetToken.id}" > Click Here</a> `
-    });
-    //Return Response 
-    res.status(200).json('Password reset email sent')
-
-
-
+        });
+        //Return Response 
+        res.status(200).json('Password reset email sent')
     } catch (error) {
         next(error);
     }
@@ -193,8 +186,8 @@ export const verifyResetToken = async (req, res, next) => {
     try {
         //Find Reset Token by id 
         const resetToken = await ResetToken.findById(req.params.id);
-        if(!resetToken){
-            return res.status(404).json({message:'Reset Token Not Found'});
+        if (!resetToken) {
+            return res.status(404).json({ message: 'Reset Token Not Found' });
         }
         console.log(resetToken)
         //check if token is valid
@@ -202,7 +195,7 @@ export const verifyResetToken = async (req, res, next) => {
             return res.status(409).json({ message: 'Invalid Reset Token' });
         }
         //Return Response
-        res.status(200).json({message:'Valid Reset Token'});
+        res.status(200).json({ message: 'Valid Reset Token' });
 
     } catch (error) {
         next(error);
@@ -212,54 +205,49 @@ export const verifyResetToken = async (req, res, next) => {
 // Reset Password
 
 export const resetPassword = async (req, res, next) => {
-try {
-    //validate request
-    const {value,error} = resetPasswordValidator.validate(req.body);
-    if(error){
-        return res.status(422).json(error.details[0].message);
-    }
-    //Find reset Token By Id
-    const resetToken = await ResetToken.findById(value.resetToken);
-    if(!resetToken0){
-        return res.status(404).json({message:'Reset Token not found'});
-    }
-    //Check if token is valid 
-    if (resetToken.expired || Date.now() > new Date(resetToken.expiredAt).getTime()) {
-        return res.status(409).json({ message: 'Invalid Reset Token' });
+    try {
+        //validate request
+        const { value, error } = resetPasswordValidator.validate(req.body);
+        if (error) {
+            return res.status(422).json(error.details[0].message);
         }
-    //Encrypt user password
-    const hashedPassword = bcrypt.hashSync(value.password, 10);
-    // Update user password 
-    await User.findByIdAndUpdate(resetToken.userId,{
-        password:hashedPassword
-    });
-//Expire reset password
-await ResetToken.findByIdAndUpdate(value.resetToken,{
-    expired:true
-})
-} catch (error) {
-    next
+        //Find reset Token By Id
+        const resetToken = await ResetToken.findById(value.resetToken);
+        if (!resetToken0) {
+            return res.status(404).json({ message: 'Reset Token not found' });
+        }
+        //Check if token is valid 
+        if (resetToken.expired || Date.now() > new Date(resetToken.expiredAt).getTime()) {
+            return res.status(409).json({ message: 'Invalid Reset Token' });
+        }
+        //Encrypt user password
+        const hashedPassword = bcrypt.hashSync(value.password, 10);
+        // Update user password 
+        await User.findByIdAndUpdate(resetToken.userId, {
+            password: hashedPassword
+        });
+        //Expire reset password
+        await ResetToken.findByIdAndUpdate(value.resetToken, {
+            expired: true
+        })
+    } catch (error) {
+        next
+    }
 }
-}
-
-
 
 //update user 
 
 export const updateUser = async (req, res, next) => {
     try {
+        // Validate request
         const { error, value } = updateUserValidator.validate(req.body);
-
-
         if (error) {
             return res.status(400).send(error.details[0].message);
         }
-
         const user = await User.findByIdAndUpdate(req.params.id, value, { new: true });
         if (!User) {
             return res.status(404).send({ message: "User not found" });
         }
-
         res.status(201).json({ message: 'User updated', user });
     } catch (error) {
         next(error)
@@ -278,7 +266,7 @@ export const getUsers = async (req, res, next) => {
         next(error);
     }
 }
-//CReate a User 
+//Create a User 
 export const createUser = async (req, res, next) => {
     try {
         // Validate request
