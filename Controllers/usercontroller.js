@@ -254,7 +254,7 @@ export const resetPassword = async (req, res, next) => {
         }
         //Find reset Token By Id
         const resetToken = await ResetToken.findById(value.resetToken);
-        if (!resetToken0) {
+        if (!resetToken) {
             return res.status(404).json({ message: 'Reset Token not found' });
         }
         //Check if token is valid 
