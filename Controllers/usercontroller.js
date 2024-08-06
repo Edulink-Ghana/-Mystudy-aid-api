@@ -271,6 +271,7 @@ export const resetPassword = async (req, res, next) => {
         await ResetToken.findByIdAndUpdate(value.resetToken, {
             expired: true
         })
+        res.status(200).json({ message: 'Password reset successful' });
     } catch (error) {
         next
     }
