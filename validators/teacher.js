@@ -13,6 +13,7 @@ export const teacherValidator = Joi.object({
 export const registerValidator = Joi.object({
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
+    phoneNumber: Joi.string().required(),
     userName: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
