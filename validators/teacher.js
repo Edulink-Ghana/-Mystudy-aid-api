@@ -3,8 +3,12 @@ import Joi from "joi"
 export const teacherValidator = Joi.object({
     
     subjects: Joi.array().items(Joi.string()),
-    area: Joi.string(),
-    availability: Joi.array().items(Joi.string()),
+    area: Joi.array().items(Joi.string()),
+    availability: Joi.array().items({
+        day: Joi.string(),
+        startTime: Joi.string(),
+        endTime: Joi.string(),
+    }),
     costPerHour: Joi.number(),
     qualifications: Joi.array().items(Joi.string()),
     grade: Joi.array().items(Joi.string()),
