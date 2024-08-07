@@ -16,7 +16,7 @@ teacherRouter.get('/teachers/search', searchTeachers);
 
 teacherRouter.get('/teachers',isAuthenticatedteacher, getTeachers);
 
-teacherRouter.patch('/teachers/:id', isAuthenticatedteacher, isAuthorized('update_teacher'), updateTeacher);
+teacherRouter.patch('/teachers/:id', isAuthenticatedteacher,updateTeacher);
 
 teacherRouter.get('/teachers/profile',isAuthenticatedteacher,profile)
 
