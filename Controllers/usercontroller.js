@@ -1,5 +1,4 @@
-import { ResetToken, User } from "../models/userModel.js";
-import { Teacher } from "../models/teacherModel.js";
+import { ResetToken, User, VerificationToken } from "../models/userModel.js";
 import { Booking } from "../models/bookingModel.js";
 import { registerUserValidator, loginValidator, createUserValidator, updateUserValidator, forgotPasswordValidator, resetPasswordValidator } from "../validators/user.js";
 import bcrypt from 'bcrypt'
@@ -23,21 +22,35 @@ export const register = async (req, res, next) => {
         // Encrypt user password
         const hashedPassword = bcrypt.hashSync(value.password, 10);
         // Create user
-        await User.create({
+        const newUser = await User.create({
             ...value,
             password: hashedPassword
         });
-        // Send email to user
+
+        // Generate a verification token
+        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1h' });
+        const verifyEmailToken = await VerificationToken.create({
+            userId: newUser._id,
+            token: token
+        });
+
+        // Send verification email
         await mailTransport.sendMail({
-            from: "emmanuel@laremdetech.com",
             to: value.email,
-            subject: "User Account Created!",
-            text: `Dear user,\n\nA user account has been created for you with the following credentials.\n\nUsername: ${value.userName}\nEmail: ${value.email}\nPassword: ${value.password}\n\nThank you!`,
+            from: "emmanuel@laremdetech.com",
+            subject: "Verify Your Email",
+            html: `
+              <h3>Hello ${newUser.firstName}</h3>
+              <p>Please verify your email by clicking on the following link:</p>
+              <a href="${process.env.FRONTEND_URL}/verify-email/${verifyEmailToken}">Verify Email</a>
+            `,
         });
         // Return response
-        res.status(201).json({ message: 'User registered' });
+        res.status(201).json({ message: 'User created successfully. Please check your email for verification.' });
     } catch (error) {
         next(error);
+        res.status(500).json({ message: 'Failed to create user' });
+
     }
 }
 
@@ -45,6 +58,7 @@ export const register = async (req, res, next) => {
 //Session Login 
 export const login = async (req, res, next) => {
     try {
+
         // Validate request
         const { value, error } = loginValidator.validate(req.body);
         if (error) {
@@ -138,9 +152,9 @@ export const profile = async (req, res, next) => {
             .select({ password: false })
             .populate({
                 path: 'bookings',
-                select:"timeslot date grade area subject teacher",
+                select: "timeslot date grade area subject teacher",
                 options
-             })
+            })
         // Return response
         res.status(200).json(user);
     } catch (error) {
@@ -153,29 +167,29 @@ export const profile = async (req, res, next) => {
 // Get user's bookings
 export const getUserBookings = async (req, res, next) => {
     try {
-      // Get user ID from session or request
-      const userId = req.session?.user?.id || req?.user?.id;
-  
-      // Find the user
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).send({ error: 'User not found' });
-      }
-  
-      // Find bookings associated with the user
-      const bookings = await Booking.find({ user: userId })
-        .populate({
-          path: 'teacher',
-          select: 'firstName lastName userName email', // Select teacher fields
-        });
-  
-      // Return response
-      res.status(200).json(bookings);
+        // Get user ID from session or request
+        const userId = req.session?.user?.id || req?.user?.id;
+
+        // Find the user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        // Find bookings associated with the user
+        const bookings = await Booking.find({ user: userId })
+            .populate({
+                path: 'teacher',
+                select: 'firstName lastName userName email', // Select teacher fields
+            });
+
+        // Return response
+        res.status(200).json(bookings);
     } catch (error) {
-      next(error);
+        next(error);
     }
-  };
-  
+};
+
 // user logout
 export const logout = async (req, res, next) => {
     try {
@@ -242,6 +256,48 @@ export const verifyResetToken = async (req, res, next) => {
         next(error);
     }
 }
+
+
+// Email Verification Route
+export const verifyEmail = async (req, res) => {
+    try {
+        // Find the verification token by ID
+        const token = await VerificationToken.findById(req.params.id);
+
+        if (!token) {
+            return res.status(404).json({ message: 'Verification token not found' });
+        }
+
+        // Extract the JWT token string from the database object
+        const jwtToken = token.token;
+
+        // Verify the JWT token
+        const decoded = jwt.verify(jwtToken, process.env.JWT_PRIVATE_KEY);
+
+        // Find the user by ID
+        const user = await User.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update the user's verified status
+        user.verified = true;
+        await user.save();
+
+        // Delete the verification token after successful verification
+        await token.deleteOne();
+
+        res.status(200).json({ message: 'Email verified successfully' });
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Token expired' });
+        } else {
+            console.error(error);
+            return res.status(500).json({ error: 'Failed to verify email' });
+        }
+    }
+};
 
 // Reset Password
 

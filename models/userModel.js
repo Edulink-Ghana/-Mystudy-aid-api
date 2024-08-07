@@ -31,6 +31,19 @@ const resetTokenSchema = new Schema({
 
 },{
     timestamps:true
+});
+
+const verificationTokenSchema = new Schema({
+    userId:{type:Types.ObjectId,required:true, ref:'User'},
+    token:{type:String,required:true},
+    expired:{type:Boolean, default:false},
+    expiredAt:{
+        type:Date,
+        default:() => new Date().setHours(new Date().getHours() + 2)
+    }
+
+},{
+    timestamps:true
 })
 
 
@@ -44,8 +57,14 @@ resetTokenSchema
 .plugin(toJSON)
 .plugin(mongooseErrors);
 
+verificationTokenSchema
+.plugin(toJSON)
+.plugin(mongooseErrors);
+
+
 
 // Export  Models
 export const User = model("User", userSchema);
 export const ResetToken = model("ResetToken", resetTokenSchema);
+export const VerificationToken = model("VerificationToken", verificationTokenSchema);
 
