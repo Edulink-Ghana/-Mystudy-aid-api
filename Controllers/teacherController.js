@@ -135,6 +135,7 @@ export const profile = async (req, res, next) => {
         // Get user id from session or request
         const id = req.session?.user?.id || req?.user?.id;
         // Find user by id
+        const options = { sort: { startDate: -1 } }
         const teacher = await Teacher.findById(id)
             .select({ password: false })
             .populate({
@@ -251,4 +252,4 @@ export const logout = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-};
+
