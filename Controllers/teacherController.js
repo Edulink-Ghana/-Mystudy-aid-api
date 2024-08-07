@@ -156,25 +156,37 @@ export const getTeachers = async (req, res, next) => {
 export const searchTeachers = async (req, res, next) => {
     try {
         // Get search parameters from query
-        const { subject, costMin, costMax, curriculum } = req.query;
+        const { subject, costMin, costMax, curriculum,area,grade,teachingMode } = req.query;
 
         // Build query object based on search parameters
         const query = {};
 
         if (subject) {
-            query.subject = subject;
+            query.subjects = subject;
         }
 
         if (costMin && costMax) {
-            query.cost = { $gte: costMin, $lte: costMax };
+            query.costPerHour = { $gte: (costMin), $lte:(costMax )};
         } else if (costMin) {
-            query.cost = { $gte: costMin };
+            query.costPerHour = { $gte:(costMin) };
         } else if (costMax) {
-            query.cost = { $lte: costMax };
+            query.costPerHour = { $lte: (costMax )};
         }
 
         if (curriculum) {
             query.curriculum = curriculum;
+        }
+
+        if (area) {
+            query.area = { $in: area.split(',') }; // Search for teachers with any of the areas
+        }
+
+        if (grade) {
+            query.grade = { $in: grade.split(',') }; // Search for teachers with any of the grades
+        }
+
+        if (teachingMode) {
+            query.teachingMode = teachingMode;
         }
 
         // Find teachers matching the query
