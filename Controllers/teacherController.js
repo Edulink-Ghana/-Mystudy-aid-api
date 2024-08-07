@@ -1,7 +1,11 @@
 import { Teacher } from "../models/teacherModel.js";
-import { loginValidator, registerValidator, teacherValidator } from "../validators/teacher.js";
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import {
+    loginValidator,
+    registerValidator,
+    teacherValidator,
+} from "../validators/teacher.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 // teacher registration
 export const registerTeacher = async (req, res, next) => {
@@ -11,28 +15,46 @@ export const registerTeacher = async (req, res, next) => {
         if (error) {
             return res.status(422).json(error.details[0].message);
         }
-        const email = value.email
-        // check if the user exixt 
-        const UserExist = await Teacher.findOne({ email })
+        const email = value.email;
+        // check if the user exixt
+        const UserExist = await Teacher.findOne({ email });
         if (UserExist) {
-            return res.status(401).send({ message: 'User has already signed Up' })
+            return res.status(401).send({ message: "User has already signed Up" });
         }
         // Encrypt user password
         const hashedPassword = bcrypt.hashSync(value.password, 10);
         // Create user
-        await Teacher.create({
+        const newUser = await Teacher.create({
             ...value,
-            password: hashedPassword
+            password: hashedPassword,
         });
+        // Generate a verification token
+        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1h' });
+        const verifyEmailToken = await VerificationToken.create({
+            userId: newUser._id,
+            token: token
+        });
+
+        // Send verification email
+        await mailTransport.sendMail({
+            to: value.email,
+            from: "emmanuel@laremdetech.com",
+            subject: "Verify Your Email",
+            html: `
+              <h3>Hello ${newUser.firstName}</h3>
+              <p>Please verify your email by clicking on the following link:</p>
+              <a href="${process.env.FRONTEND_URL}/verify-email/${verifyEmailToken}">Verify Email</a>
+            `,
+        });
+
         // Return response
-        res.status(201).json({ message: 'Teacher registered' });
+        res.status(201).json({ message: "Teacher created successfully. Please check your email for verification." });
     } catch (error) {
         next(error);
     }
-}
+};
 
-
-//Session Login 
+//Session Login
 export const login = async (req, res, next) => {
     try {
         // Validate request
@@ -42,37 +64,33 @@ export const login = async (req, res, next) => {
         }
         // Find a user with their unique identifier
         const user = await Teacher.findOne({
-            $or: [
-                { userName: value.userName },
-                { email: value.email },
-            ]
+            $or: [{ userName: value.userName }, { email: value.email }],
         });
         if (!user) {
-            return res.status(401).json({ message: 'User not found' });
+            return res.status(401).json({ message: "User not found" });
         }
         // Verify their password
         const correctPassword = bcrypt.compareSync(value.password, user.password);
         if (!correctPassword) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: "Invalid credentials" });
         }
         // Create a session
-        req.session.user = { id: user.id }
+        req.session.user = { id: user.id };
         // Return response
         res.status(200).json({
-            message: 'User logged in succesfull',
+            message: "User logged in succesfull",
             user: {
                 firstName: user.firstName,
                 lastName: user.lastName,
-                userName: user.userName
-            }
+                userName: user.userName,
+            },
         });
     } catch (error) {
         next(error);
     }
-}
+};
 
-
-//Token login 
+//Token login
 export const token = async (req, res, next) => {
     try {
         // Validate request
@@ -82,39 +100,34 @@ export const token = async (req, res, next) => {
         }
         // Find a user with their unique identifier
         const user = await Teacher.findOne({
-            $or: [
-                { userName: value.userName },
-                { email: value.email },
-            ]
+            $or: [{ userName: value.userName }, { email: value.email }],
         });
         if (!user) {
-            return res.status(401).json({ message: 'User not found' });
+            return res.status(401).json({ message: "User not found" });
         }
         // Verify their password
         const correctPassword = bcrypt.compareSync(value.password, user.password);
         if (!correctPassword) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: "Invalid credentials" });
         }
         // Create a token
-        const token = jwt.sign(
-            { id: user.id },
-            process.env.JWT_PRIVATE_KEY,
-            { expiresIn: '48h' }
-        );
+        const token = jwt.sign({ id: user.id }, process.env.JWT_PRIVATE_KEY, {
+            expiresIn: "48h",
+        });
         // Return response
         res.status(200).json({
-            message: 'User logged in succesfull',
+            message: "User logged in succesfull",
             accessToken: token,
             user: {
                 firstName: user.firstName,
                 lastName: user.lastName,
-                userName: user.userName
-            }
+                userName: user.userName,
+            },
         });
     } catch (error) {
         next(error);
     }
-}
+};
 
 //Teacher Profile
 export const profile = async (req, res, next) => {
@@ -126,26 +139,27 @@ export const profile = async (req, res, next) => {
         const teacher = await Teacher.findById(id)
             .select({ password: false })
             .populate({
-                path: 'bookings',
+                path: "bookings",
                 select: "timeslot date grade area subject user",
-                options
-            })
+                options,
+            });
         // Return response
         res.status(200).json(teacher);
     } catch (error) {
         next(error);
     }
-}
+};
 
-// Get All teachers 
+// Get All teachers
 export const getTeachers = async (req, res, next) => {
     try {
         //Get query params (optional for filtering)
         const { filter = "{}" } = req.query;
 
         // Get all  teachers
-        const allTeachers = await Teacher.find(JSON.parse(filter))
-            .select({ password: false }); // Exclude password from response
+        const allTeachers = await Teacher.find(JSON.parse(filter)).select({
+            password: false,
+        }); // Exclude password from response
         //return response
         res.status(200).json(allTeachers);
     } catch (error) {
@@ -157,7 +171,8 @@ export const getTeachers = async (req, res, next) => {
 export const searchTeachers = async (req, res, next) => {
     try {
         // Get search parameters from query
-        const { subject, costMin, costMax, curriculum,area,grade,teachingMode } = req.query;
+        const { subject, costMin, costMax, curriculum, area, grade, teachingMode } =
+            req.query;
 
         // Build query object based on search parameters
         const query = {};
@@ -167,11 +182,11 @@ export const searchTeachers = async (req, res, next) => {
         }
 
         if (costMin && costMax) {
-            query.costPerHour = { $gte: (costMin), $lte:(costMax )};
+            query.costPerHour = { $gte: costMin, $lte: costMax };
         } else if (costMin) {
-            query.costPerHour = { $gte:(costMin) };
+            query.costPerHour = { $gte: costMin };
         } else if (costMax) {
-            query.costPerHour = { $lte: (costMax )};
+            query.costPerHour = { $lte: costMax };
         }
 
         if (curriculum) {
@@ -179,11 +194,11 @@ export const searchTeachers = async (req, res, next) => {
         }
 
         if (area) {
-            query.area = { $in: area.split(',') }; // Search for teachers with any of the areas
+            query.area = { $in: area.split(",") }; // Search for teachers with any of the areas
         }
 
         if (grade) {
-            query.grade = { $in: grade.split(',') }; // Search for teachers with any of the grades
+            query.grade = { $in: grade.split(",") }; // Search for teachers with any of the grades
         }
 
         if (teachingMode) {
@@ -191,8 +206,7 @@ export const searchTeachers = async (req, res, next) => {
         }
 
         // Find teachers matching the query
-        const teachers = await Teacher.find(query)
-            .select({ password: false }); // Exclude password from response
+        const teachers = await Teacher.find(query).select({ password: false }); // Exclude password from response
 
         // Return response
         res.status(200).json(teachers);
@@ -204,36 +218,38 @@ export const searchTeachers = async (req, res, next) => {
 // Update teacher
 export const updateTeacher = async (req, res, next) => {
     try {
-      // Validate request
-      const { value, error } = teacherValidator.validate(req.body);
-      if (error) {
-        return res.status(422).json(error.details[0].message);
-      }
-  
-      // Get teacher ID from URL parameter
-      const teacherId = req.params.id;
-  
-      // Find the teacher
-      const teacher = await Teacher.findByIdAndUpdate(teacherId, value, { new: true });
-      if (!teacher) {
-        return res.status(404).send({ message: "Teacher not found" });
-      }
-  
-      // Return response
-      res.status(201).json({ message: 'Teacher updated', teacher });
+        // Validate request
+        const { value, error } = teacherValidator.validate(req.body);
+        if (error) {
+            return res.status(422).json(error.details[0].message);
+        }
+
+        // Get teacher ID from URL parameter
+        const teacherId = req.params.id;
+
+        // Find the teacher
+        const teacher = await Teacher.findByIdAndUpdate(teacherId, value, {
+            new: true,
+        });
+        if (!teacher) {
+            return res.status(404).send({ message: "Teacher not found" });
+        }
+
+        // Return response
+        res.status(201).json({ message: "Teacher updated", teacher });
     } catch (error) {
-      next(error);
+        next(error);
     }
-  };
-  
+};
+
 // Teacher logout
 export const logout = async (req, res, next) => {
     try {
         // Destroy user session
         await req.session.destroy();
         // Return response
-        res.status(200).json({ message: 'User logged out' });
+        res.status(200).json({ message: "User logged out" });
     } catch (error) {
         next(error);
     }
-}
+
