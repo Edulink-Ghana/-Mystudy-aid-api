@@ -1,7 +1,10 @@
 import Joi from "joi"
 
 export const teacherValidator = Joi.object({
-    
+    firstName: Joi.string(),
+    lastName: Joi.string(),
+    phoneNumber: Joi.string(),
+    userName: Joi.string(),
     subjects: Joi.array().items(Joi.string()),
     area: Joi.array().items(Joi.string()),
     availability: Joi.array().items({
