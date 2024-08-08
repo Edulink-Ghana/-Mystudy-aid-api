@@ -1,6 +1,8 @@
 import { ResetToken, User, VerificationToken } from "../models/userModel.js";
 import { Booking } from "../models/bookingModel.js";
+import { Teacher } from "../models/teacherModel.js";
 import { registerUserValidator, loginValidator, createUserValidator, updateUserValidator, forgotPasswordValidator, resetPasswordValidator } from "../validators/user.js";
+import { reviewValidator } from "../validators/review.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { mailTransport } from "../Config/mail.js";
@@ -393,3 +395,70 @@ export const createUser = async (req, res, next) => {
         next(error);
     }
 }
+
+
+// Create a review 
+export const createReview = async (req, res, next) => {
+    try {
+        // Validate the request body
+        const { value, error } = reviewValidator.validate(req.body);
+        if (error) {
+            return res.status(422).json(error.details[0].message);
+        }
+
+        // Get the teacher ID from the request parameters
+        const teacherId = req.params.id;
+
+        // Get the user ID from the session or request
+        const userId = req.session?.user?.id || req?.user?.id;
+
+        // Find the teacher
+        const teacher = await Teacher.findById(teacherId);
+        if (!teacher) {
+            return res.status(404).send({ error: 'Teacher not found' });
+        }
+
+        // Find the user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        // Check if the user has already reviewed this teacher
+        const existingReview = teacher.reviews.find(review => review.user.toString() === userId);
+        if (existingReview) {
+            return res.status(400).send({ error: 'You have already reviewed this teacher' });
+        }
+
+        // Create the new review
+        const newReview = {
+            user: userId,
+            rating: value.rating,
+            comment: value.comment,
+            date: new Date(), // Add the current date
+            userName: `${user.firstName} ${user.lastName}`, // Add the user's full name
+        };
+
+        // Add the review to the teacher's reviews array
+        teacher.reviews.push(newReview);
+        await teacher.save();
+
+        // Add the review to the user's reviews array
+        user.reviews.push({
+            teacher: teacherId, // Reference the teacher
+            rating: value.rating,
+            comment: value.comment,
+            date: new Date(), // Add the current date
+        });
+        await user.save();
+
+        // Return a success response
+        res.status(201).json({ message: 'Review created successfully', review: newReview });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
+

@@ -1,5 +1,5 @@
 import { login, registerTeacher, token, profile, logout,getTeachers, searchTeachers, updateTeacher } from "../Controllers/teacherController.js";
-import {  isAuthenticatedteacher, isAuthorized } from "../middlewares/auth.js";
+import {  isAuthenticated, isAuthenticatedteacher, isAuthorized } from "../middlewares/auth.js";
 import { Router } from "express";
 
 

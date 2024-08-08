@@ -1,9 +1,5 @@
 import { Teacher } from "../models/teacherModel.js";
-import {
-    loginValidator,
-    registerValidator,
-    teacherValidator,
-} from "../validators/teacher.js";
+import {loginValidator,registerValidator, teacherValidator,} from "../validators/teacher.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -242,6 +238,7 @@ export const updateTeacher = async (req, res, next) => {
     }
 };
 
+
 // Teacher logout
 export const logout = async (req, res, next) => {
     try {
@@ -252,4 +249,6 @@ export const logout = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
 
