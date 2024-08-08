@@ -180,6 +180,7 @@ export const getUserBookings = async (req, res, next) => {
 
         // Find bookings associated with the user
         const bookings = await Booking.find({ user: userId })
+            .select("-user ")
             .populate({
                 path: 'teacher',
                 select: 'firstName lastName userName email', // Select teacher fields
