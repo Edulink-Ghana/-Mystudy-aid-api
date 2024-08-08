@@ -14,7 +14,11 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     role: { type: String, default: 'user',enum: ['superadmin', 'admin', 'teacher', 'user']  },
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }], // Reference to bookings
-    reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }] ,// Reference to reviews
+    reviews: [{ 
+        teacher: { type: Schema.Types.ObjectId, ref: 'Teacher', required: true }, // Reference to the teacher
+        rating: { type: Number, required: true },
+        comment: { type: String, required: true },
+    }],
     verified: { type: Boolean, required: true, default: false}
 },
     {
