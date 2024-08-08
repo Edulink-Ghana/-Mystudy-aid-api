@@ -46,7 +46,8 @@ export const roles = [
             'read_user',
             'update_booking',
             'read_booking',
-            'create_booking'
+            'create_booking',
+            'delete_booking',
         ]
     }
 ];
